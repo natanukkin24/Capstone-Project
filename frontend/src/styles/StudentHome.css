@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.student-home-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background-color: transparent;
+  z-index: 10;
+}
+.header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+.header-box1,
+.header-box2,
+.header-box3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background-color: #768e50 !important;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  box-shadow: none;
+  border: 2px solid black;
+}
+
+.header-box1:hover,
+.header-box2:hover,
+.header-box3:hover {
+  background-color: #8b7745 !important;
+  transform: scale(1.05);
+}
+
+.header-box1 .icon,
+.header-box2 .icon,
+.header-box3 .icon {
+  font-size: 24px;
+  color: #fff !important;
+}
+
+.header-box1 span,
+.header-box2 span,
+.header-box3 span {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.app-title {
+  font-size: 24px;
+  color: #fff;
+  margin: 0;
+}
+
+.student-home-main {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 140px 0;
+  align-items: center;
+  justify-items: center;
+}
+
+.home-box1,
+.home-box2,
+.home-box3 {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  box-shadow: none;
+  color: inherit;
+  border: 2px solid black;
+}
+
+.home-box1 {
+  background-color: #768e50;
+  color: #768e50;
+}
+
+.home-box2 {
+  background-color: #887443;
+  color: #887443;
+}
+
+.home-box3 {
+  background-color: #636363;
+  color: #636363;
+}
+
+.home-box1:hover,
+.home-box2:hover,
+.home-box3:hover {
+  transform: scale(1.05);
+}
+
+.svghome-icon {
+  width: 80px;
+  height: 80px;
+  color: currentColor;
+}
+
+.home-box1 span,
+.home-box2 span,
+.home-box3 span {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 12px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  -webkit-text-stroke: 0.8px black;
+}

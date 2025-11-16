@@ -1,0 +1,172 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+/* 🔹 Background & Page Layout */
+.teacher-home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+/* 🔹 Header */
+.teacher-home-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px 60px;
+  z-index: 10;
+}
+
+.header-icons {
+  display: flex;
+  gap: 20px;
+}
+
+.header-box1,
+.header-box2,
+.header-box3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: #5f7c3b;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+  transition: 0.2s;
+}
+
+.header-box1:hover,
+.header-box2:hover,
+.header-box3:hover {
+  background-color: #4b632f;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.header-box1 span,
+.header-box2 span,
+.header-box3 span {
+  font-weight: bold;
+  color: white;
+  font-size: 14px;
+}
+
+/* 🔹 Main Container */
+.container {
+  background-color: #4f7239;
+  border-radius: 25px;
+  width: 900px;
+  min-height: 600px;
+  padding: 40px;
+  margin-top: 100px;
+  text-align: center;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.class-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 3px #000;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+/* 🔹 Close Button */
+.close-icon {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 26px;
+  color: red;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.close-icon:hover {
+  transform: scale(1.1);
+}
+
+/* 🔹 Class List Layout */
+.class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+/* 🔹 Individual Class Card */
+.class-card {
+  width: 95%;
+  border-radius: 20px;
+  padding: 25px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  transition: 0.2s;
+}
+
+.class-card.yellow-card {
+  background-color: #f8df84;
+}
+
+.class-card.brown-card {
+  background-color: #b0926a;
+}
+
+.class-info p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #222;
+  text-align: left;
+}
+
+/* 🔹 Right Section (Class Code + Button) */
+.class-actions {
+  text-align: right;
+}
+
+.class-code-label {
+  font-weight: bold;
+  color: #222;
+  font-size: 14px;
+}
+
+.class-code {
+  background: #fff;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #000;
+  font-weight: 600;
+  margin: 5px 0;
+}
+
+.enter-room-btn {
+  background-color: #4e7c2e;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: 0.2s;
+}
+
+.enter-room-btn:hover {
+  background-color: #3e6526;
+}

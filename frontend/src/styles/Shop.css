@@ -1,0 +1,266 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.shop-page {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  height: 95vh;
+  width: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-y: auto;
+  border-radius: 10px;
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #444;
+  padding: 10px 20px;
+  border-bottom: 2px solid #222;
+  font-size: 20px;
+  font-weight: bold;
+  flex-wrap: wrap;
+}
+
+.shop-title {
+  font-size: 22px;
+  color: #fff;
+  flex-grow: 1;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.header-btn,
+.shop-header .close-btn {
+  background-color: #222;
+  border: 1px solid #888;
+  color: white;
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shop-header .close-btn {
+  color: red;
+  border: none;
+  font-size: 22px;
+  text-align: right;
+  padding: 2px;
+}
+
+.header-btn:hover,
+.shop-item button:hover,
+.shop-header .close-btn:hover {
+  background-color: #555;
+}
+
+.gold-display {
+  color: gold;
+  font-weight: bold;
+  margin: 15px 0;
+  font-size: 1.1rem;
+}
+
+.alert-box {
+  background-color: #ff5555;
+  color: white;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid red;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.section {
+  background-color: #3b3b3b;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #666;
+  padding-bottom: 5px;
+}
+
+.item-list {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.shop-item {
+  background-color: #555;
+  border: 2px solid #666;
+  border-radius: 8px;
+  padding: 10px;
+  width: calc(33.333% - 10px);
+  min-width: 100px;
+  max-width: 150px;
+  text-align: center;
+  color: #fff;
+  flex-grow: 1;
+}
+
+.shop-item img {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
+}
+
+.shop-item .item-name {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.shop-item .item-price {
+  font-size: 12px;
+  color: gold;
+  margin-bottom: 5px;
+}
+
+.shop-item button {
+  background-color: #222;
+  border: 1px solid #888;
+  color: white;
+  padding: 3px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .shop-item {
+    width: calc(50% - 10px);
+  }
+
+  .header-buttons {
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .shop-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .shop-title {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-item {
+    width: 100%;
+  }
+
+  .gold-display {
+    font-size: 1rem;
+  }
+
+  .shop-header,
+  .header-buttons {
+    align-items: center;
+  }
+
+  .shop-page {
+    padding: 10px;
+  }
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #444;
+  padding: 10px 20px;
+  border-bottom: 2px solid #222;
+  font-size: 20px;
+  font-weight: bold;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.shop-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: red;
+  cursor: pointer;
+  position: absolute;
+  top: 5px;
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .shop-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px 40px;
+  }
+
+  .shop-header .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-header {
+    align-items: center;
+    padding: 15px 15px 40px;
+  }
+
+  .shop-header .close-btn {
+    top: 5px;
+    right: 15px;
+    font-size: 22px;
+  }
+}
+
+@keyframes jumpIn {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-5px);
+  }
+}
+
+.shop-item img {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
+  animation: jumpIn 0.6s ease-out infinite alternate;
+}
+
+.shop-item img:hover {
+  animation: jumpIn 0.6s ease-out;
+}

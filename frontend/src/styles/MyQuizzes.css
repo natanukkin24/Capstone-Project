@@ -1,0 +1,425 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.leaderboard-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.sidebar10 {
+  width: 240px;
+  height: 85vh;
+  background-color: #48623a;
+  color: white;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 15px 0 0 15px;
+}
+
+.back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.profile-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-section h2 {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.profile-section p.role {
+  color: #ffc94a;
+  font-weight: bold;
+  margin-top: -25px;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.avatar-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.menu {
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+  width: 100%;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  text-shadow: 1px 1px 2px black;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background-color: #35502a;
+}
+.main-content2 {
+  flex: 1;
+  padding: 30px;
+  width: 100%;
+  max-width: calc(80vw - 240px);
+  background-color: rgba(247, 230, 196, 0.9);
+  border-radius: 0 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.95;
+  height: 85vh;
+}
+
+.m h4 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #b89a60;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: inline-block;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border: #000 solid 1px;
+}
+
+.quiz-table {
+  background-color: #b89a60;
+  border-radius: 10px;
+  padding: 15px;
+  width: 100%;
+  height: 100%;
+  border: #000 solid 1px;
+}
+.quiz-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  background-color: #778f51; /* box background */
+  padding: 10px 0; /* vertical padding */
+  border-radius: 8px; /* rounded corners */
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3); /* optional shadow */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+  margin-bottom: 10px;
+  border: #000 solid 1px;
+}
+
+.quiz-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+  border: 1px solid #fffacd;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  padding: 5px 0;
+  transition: background-color 0.3s, color 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.quiz-row.clickable {
+  cursor: pointer;
+}
+
+.quiz-row.unclickable {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.quiz-header span {
+  flex: 1;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  padding: 5px 0;
+}
+
+.quiz-row span {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  color: #fffacd;
+  transition: color 0.3s;
+}
+
+.quiz-row.clickable:hover {
+  background-color: #a6844c;
+  color: #f0e68c;
+  border-color: #f0e68c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-row.clickable:hover span {
+  color: #f0e68c;
+}
+
+.quiz-row.unclickable:hover {
+  background-color: transparent;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  min-width: 80px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.status-waiting {
+  background-color: #ffa500;
+  color: #ffffff;
+  border: 2px solid #ff8c00;
+}
+
+.status-pending {
+  background-color: #ff6b6b;
+  color: #ffffff;
+  border: 2px solid #ff4757;
+}
+
+.status-done {
+  background-color: #51cf66;
+  color: #ffffff;
+  border: 2px solid #40c057;
+}
+
+/* Quiz Actions */
+.quiz-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.delete-quiz-btn {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.delete-quiz-btn:hover {
+  background-color: #cc0000;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.delete-quiz-btn:active {
+  transform: scale(0.95);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25px;
+  text-align: center;
+  border-bottom: 2px solid #7c9e68;
+  padding-bottom: 15px;
+}
+
+.delete-modal {
+  max-width: 450px;
+}
+
+.delete-title {
+  color: #d32f2f;
+  border-bottom-color: #d32f2f;
+}
+
+.delete-warning {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.delete-warning p {
+  font-size: 18px;
+  color: #333;
+  margin: 10px 0;
+}
+
+.warning-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+.warning-text strong {
+  color: #d32f2f;
+  font-size: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn-cancel,
+.btn-delete {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #d0d0d0;
+}
+
+.btn-delete {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #b71c1c;
+  transform: scale(1.05);
+}
+
+@media (max-width: 1400px) {
+  .main-content2 {
+    width: 90vw;
+    padding: 20px;
+  }
+  .quiz-table {
+    font-size: 14px;
+  }
+}

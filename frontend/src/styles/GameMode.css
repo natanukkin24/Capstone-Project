@@ -1,0 +1,161 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.game-mode-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: url("../Assets/bg.jpg") no-repeat center center;
+  background-size: cover;
+}
+
+.leaderboard-container {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-section {
+  text-align: center;
+}
+
+.profile-section h2 {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.profile-section p.role {
+  color: #ffc94a;
+  font-weight: bold;
+  margin-top: -25px;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.avatar-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.sidebar10 {
+  width: 240px;
+  height: 85vh;
+  background-color: #48623a;
+  color: white;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 15px 0 0 15px;
+}
+
+.back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.menu {
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+  width: 100%;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  text-shadow: 1px 1px 2px black;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background-color: #35502a;
+}
+
+Main area
+.main-area {
+  flex: 1;
+  /* background: url('../Assets/bg.jpg') no-repeat center center/cover; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay {
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 60px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+/* Game mode buttons */
+.buttons {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+}
+
+.mode-btn {
+  width: 180px;
+  height: 180px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 24px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.mode-btn.single {
+  background-color: #4CAF50;
+}
+
+.mode-btn.multi {
+  background-color: #555;
+}
+
+.mode-btn span {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mode-btn:hover {
+  transform: scale(1.05);
+}

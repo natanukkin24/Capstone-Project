@@ -1,0 +1,99 @@
+.phaser-game-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  color: white;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #2a2a2a;
+  border-bottom: 2px solid #444;
+}
+
+.game-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #fff;
+}
+
+.game-info {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.score {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.players-count {
+  font-size: 16px;
+  color: #888;
+}
+
+.exit-btn {
+  padding: 10px 20px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.exit-btn:hover {
+  background-color: #d32f2f;
+}
+
+.phaser-game-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.loading {
+  color: white;
+  font-size: 20px;
+  text-align: center;
+  padding: 20px;
+}
+
+.game-controls {
+  padding: 15px 20px;
+  background-color: #2a2a2a;
+  border-top: 2px solid #444;
+  text-align: center;
+}
+
+.game-controls p {
+  margin: 5px 0;
+  color: #ccc;
+}
+
+.game-controls strong {
+  color: #4CAF50;
+}
+

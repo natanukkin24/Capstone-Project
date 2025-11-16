@@ -1,0 +1,255 @@
+.sidebar10 {
+  width: 220px;
+  height: 100vh;
+  background-color: #7c9e68;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.profile-section {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.avatar-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.role {
+  font-size: 0.9rem;
+  color: #d0e8c0;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.7rem;
+  margin: 0.3rem 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background-color: #6d8c5e;
+}
+
+.menu-item.active {
+  background-color: #5b784f;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25px;
+  text-align: center;
+  border-bottom: 2px solid #7c9e68;
+  padding-bottom: 15px;
+}
+
+/* Classroom Details Modal */
+.classroom-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #7c9e68;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #555;
+  font-size: 16px;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 16px;
+  text-align: right;
+  flex: 1;
+  margin-left: 15px;
+}
+
+.class-code-row {
+  background-color: #e8f5e9;
+  border-left-color: #4caf50;
+}
+
+.class-code {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2e7d32;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Delete Confirmation Modal */
+.delete-modal {
+  max-width: 450px;
+}
+
+.delete-title {
+  color: #d32f2f;
+  border-bottom-color: #d32f2f;
+}
+
+.delete-warning {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.delete-warning p {
+  font-size: 18px;
+  color: #333;
+  margin: 10px 0;
+}
+
+.warning-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn-cancel,
+.btn-delete {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #d0d0d0;
+}
+
+.btn-delete {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #b71c1c;
+  transform: scale(1.05);
+}
+
+.delete-classroom:hover {
+  background-color: rgba(255, 68, 68, 0.2);
+}

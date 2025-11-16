@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+.view-class-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #e3f2fd, #bbdefb);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #1976d2;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: 0.2s ease;
+}
+.back-btn:hover {
+  color: #0d47a1;
+}
+
+.class-info-card {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+.class-info-card h1 {
+  color: #1e88e5;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.class-info-card p {
+  color: #333;
+  font-size: 1rem;
+  margin: 0.3rem 0;
+}
+
+.class-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.action-card {
+  background: white;
+  width: 260px;
+  height: 200px;
+  border-radius: 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.action-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.action-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.action-icon.game {
+  color: #43a047;
+}
+.action-icon.leaderboard {
+  color: #f9a825;
+}
+
+.action-card h2 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.action-card p {
+  font-size: 0.9rem;
+  color: #555;
+}
