@@ -113,6 +113,54 @@ exports.enrollStudent = async (req, res) => {
   }
 };
 
+// Student leaves classroom
+exports.leaveClassroom = async (req, res) => {
+  try {
+    const { classId } = req.body;
+    const studentId = req.user.id;
+
+    if (!classId) {
+      return res.status(400).json({ message: "Class ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(classId)) {
+      return res.status(400).json({ message: "Invalid class ID format" });
+    }
+
+    const classDoc = await Class.findById(classId);
+    if (!classDoc) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Check if student is enrolled in this class
+    const isEnrolled = classDoc.students.some(
+      (id) => id.toString() === studentId.toString()
+    );
+    if (!isEnrolled) {
+      return res.status(400).json({ message: "You are not enrolled in this class" });
+    }
+
+    // Remove student from class
+    classDoc.students = classDoc.students.filter(
+      (id) => id.toString() !== studentId.toString()
+    );
+    await classDoc.save();
+
+    // Remove class from student's classrooms array
+    await Student.findByIdAndUpdate(
+      studentId,
+      { $pull: { classrooms: classId } },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Left classroom successfully" });
+  } catch (error) {
+    console.error("Error leaving classroom:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 
 exports.getStudentClass = async (req, res) => {

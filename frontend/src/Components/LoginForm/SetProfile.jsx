@@ -87,7 +87,7 @@ const SetProfile = () => {
         lastName,
         gender,
         gradeLevel,
-        section,
+        ...(role === 'student' && { section }), // Only students have sections
         avatar: customAvatar || selectedAvatar, // Use custom image if available, otherwise use predefined avatar
       };
 
@@ -291,14 +291,16 @@ const SetProfile = () => {
             </select>
           </div>
 
-          <div className="input-row">
-            <label>SECTION</label>
-            <input
-              type="text"
-              value={section}
-              onChange={(e) => setSection(e.target.value)}
-            />
-          </div>
+          {role !== 'teacher' && (
+            <div className="input-row">
+              <label>SECTION</label>
+              <input
+                type="text"
+                value={section}
+                onChange={(e) => setSection(e.target.value)}
+              />
+            </div>
+          )}
           
           {/* BUTTONS */}
           <div className="form-buttons">

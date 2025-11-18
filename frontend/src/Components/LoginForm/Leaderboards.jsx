@@ -1,44 +1,29 @@
 import React, { useEffect, useState } from "react";
-import "../../styles/Leaderboards.css";
+import "../../styles/TeacherLeaderboards.css";
 import SidebarStudent from "./SidebarStudent";
 import { FaTrophy } from "react-icons/fa";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const Leaderboards = () => {
-  const { classId } = useParams(); // ✅ We'll use the classId from URL (e.g., /view-class/:classId/leaderboards)
-  const [leaderboardData, setLeaderboardData] = useState([]);
-  const [classInfo, setClassInfo] = useState(null);
+  const { classId } = useParams();
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [className, setClassName] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const token = localStorage.getItem("token"); // ✅ Token from login
-        if (!token) {
-          console.error("No token found, please login again");
-          return;
-        }
-
-        const res = await fetch(
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
           `http://localhost:5000/api/classes/${classId}/leaderboard`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch leaderboard");
-
-        const data = await res.json();
-        setLeaderboardData(data.leaderboard || []);
-        setClassInfo({
-          subject: data.subject,
-          gradeLevel: data.gradeLevel,
-        });
-      } catch (error) {
-        console.error("Error loading leaderboard:", error);
+        setLeaderboard(res.data.leaderboard || []);
+        setClassName(res.data.class || "");
+      } catch (err) {
+        console.error("Error fetching leaderboard:", err);
       } finally {
         setLoading(false);
       }
@@ -47,154 +32,72 @@ const Leaderboards = () => {
     if (classId) fetchLeaderboard();
   }, [classId]);
 
+  const medals = ["🥇", "🥈", "🥉"];
+  const colors = ["#4f7a38", "#e9d18d", "#c58a4f"];
+
   return (
-    <div className="leaderboard-page">
+    <div className="leaderboard-container">
       <SidebarStudent />
 
-      <main className="leaderboard-content">
-        <div
-          className="leaderboard-title"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            backgroundColor: "#6c5d38",
-            padding: "6px 12px",
-            borderRadius: "8px",
-            boxShadow: "0 3px 5px rgba(0, 0, 0, 0.3)",
-            color: "white",
-            marginBottom: "20px",
-          }}
-        >
-          <FaTrophy
-            className="trophy-icon"
-            style={{ fontSize: "28px", color: "#f9a602" }}
-          />
-          <span>
-            {classInfo
-              ? `${classInfo.subject} — Grade ${classInfo.gradeLevel}`
-              : "LEADERBOARDS"}
-          </span>
+      {/* Main Content */}
+      <div className="main-content">
+        <div className="leaderboard-header">
+          <FaTrophy className="trophy-icon" />
+          <h1 className="leaderboard-title">{className} LEADERBOARD</h1>
         </div>
 
         {loading ? (
-          <p style={{ color: "#fff" }}>Loading leaderboard...</p>
-        ) : leaderboardData.length === 0 ? (
-          <p style={{ color: "#fff" }}>No students found in this class.</p>
+          <p>Loading leaderboard...</p>
+        ) : leaderboard.length === 0 ? (
+          <p>No students found in this class.</p>
         ) : (
-          <div
-            className="leaderboard-table"
-            style={{
-              width: "100%",
-              borderRadius: "10px",
-              backgroundColor: "#fff8dc",
-              padding: "15px",
-            }}
-          >
-            <div
-              className="table-header1"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 3fr 2fr",
-                alignItems: "center",
-                textAlign: "center",
-                padding: "10px 15px",
-                borderBottom: "1px solid #ccc",
-                fontWeight: "bold",
-              }}
-            >
-              <span style={{ justifySelf: "center" }}>RANK</span>
-              <span style={{ justifySelf: "center" }}>NAME</span>
-              <span style={{ justifySelf: "center" }}>POINTS</span>
+          <div className="leaderboard-table">
+            <div className="table-header">
+              <span>RANK</span>
+              <span>NAME</span>
+              <span>POINTS</span>
             </div>
 
-            {leaderboardData.map((player) => (
+            {leaderboard.map((student, index) => (
               <div
-                key={player._id}
-                className={`table-row rank-${
-                  player.rank <= 3 ? player.rank : "default"
-                }`}
+                key={student._id}
+                className="table-row"
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 3fr 2fr",
-                  textAlign: "center",
-                  alignItems: "center",
-                  padding: "10px 15px",
-                  borderBottom: "1px solid #ccc",
-                  backgroundColor:
-                    player.rank === 1
-                      ? "#738d4d"
-                      : player.rank === 2
-                      ? "#c5a65e"
-                      : player.rank === 3
-                      ? "#6c5d38"
-                      : "#808d86",
-                  color: "white",
+                  backgroundColor: colors[index] || "#a6a6a6",
                 }}
               >
-                <div
-                  className="rank-col"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {player.rank <= 3 ? (
-                    <FaTrophy
-                      className={`trophy-icon`}
-                      style={{
-                        color:
-                          player.rank === 1
-                            ? "gold"
-                            : player.rank === 2
-                            ? "silver"
-                            : "#cd7f32",
-                      }}
-                    />
-                  ) : (
-                    <div className="rank-circle">{player.rank}</div>
-                  )}
-                </div>
-
-                <div
-                  className="name-col"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-start",
-                    gap: "10px",
-                  }}
-                >
+                <span>{medals[index] || index + 1}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <img
-                    src={player.profileImage || "/Assets/avatar.png"}
+                    src={
+                      student.avatar && student.avatar.startsWith('data:image')
+                        ? student.avatar
+                        : student.avatar && student.avatar.trim() !== ''
+                        ? `/Assets/${student.avatar}.png`
+                        : "/Assets/avatar.png"
+                    }
                     alt="avatar"
-                    className="avatar-small"
                     style={{
                       width: "32px",
                       height: "32px",
                       borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid white",
+                    }}
+                    onError={(e) => {
+                      if (e.target.src !== "/Assets/avatar.png") {
+                        e.target.src = "/Assets/avatar.png";
+                      }
                     }}
                   />
-                  <span>{player.username || `${player.firstname} ${player.lastname}`}</span>
-                </div>
-
-                <div
-                  className="points-col"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {(player.points || 0).toLocaleString()} <span>⭐</span>
-                </div>
+                  {student.firstname} {student.lastname}
+                </span>
+                <span>{student.points?.toLocaleString() || 0} ⭐</span>
               </div>
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

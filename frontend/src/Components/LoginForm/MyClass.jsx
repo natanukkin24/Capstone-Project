@@ -9,11 +9,34 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import "../../styles/MyClass.css";
+import "../../styles/StudentHome.css";
 
 const MyClass = () => {
   const navigate = useNavigate();
   const [myClasses, setMyClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [accountType, setAccountType] = useState("");
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await axios.get("http://localhost:5000/api/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data && res.data.accountType) {
+          setAccountType(res.data.accountType.toUpperCase());
+        }
+      } catch (error) {
+        console.error("Error fetching account type:", error);
+      }
+    };
+
+    fetchAccountType();
+  }, []);
 
   useEffect(() => {
     const fetchMyClasses = async () => {
@@ -39,13 +62,20 @@ const MyClass = () => {
   }, []);
 
   const handleClose = () => navigate("/student-home");
-  const handleLogout = () => navigate("/");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/"; // full reload to reset app state
+  };
   const handleProfileClick = () => navigate("/set-profile");
   const handleEnterClass = (classId) => navigate(`/view-class/${classId}`);
 
   return (
     <div className="student-home-container">
       <header className="student-home-header">
+        <div className="header-left">
+          <span className="account-type-label">{accountType}</span>
+        </div>
         <div className="header-icons">
           <div className="header-box1" onClick={handleProfileClick}>
             <FaUserCircle className="icon" />

@@ -25,13 +25,15 @@ p {
 
 .accounttype-box-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
 .accounttype-box {
-  width: 45%;
-  height: 150px;
+  width: 100%;
+  max-width: 280px;
+  min-height: 170px;
   border-radius: 20px;
   border: 2px solid black;
   display: flex;
@@ -45,7 +47,9 @@ p {
   text-shadow: none;
   -webkit-text-stroke: 0;
   box-shadow: none;
-  gap: 15px;
+  gap: 12px;
+  text-align: center;
+  padding: 18px 20px;
 }
 
 .account-icon {
@@ -72,7 +76,21 @@ p {
   color: #778f51;
 }
 
+.admin-box {
+  background-color: #f6f7fb;
+  color: #385170;
+}
+
 .accounttype-box:hover {
   transform: scale(1.05);
   box-shadow: none;
+}
+
+.accounttype-description {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d2d2d;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  line-height: 1.3;
 }

@@ -47,10 +47,6 @@ const ViewStudents = () => {
 
   const handleBack = () => navigate("/my-class-teacher");
 
-  const handleProfile = (student) => {
-    alert(`Viewing profile of ${student.firstname} ${student.lastname}`);
-  };
-
   const handleRemove = async (studentId) => {
     if (!window.confirm("Are you sure you want to remove this student?")) return;
 
@@ -93,7 +89,6 @@ const ViewStudents = () => {
               <thead>
                 <tr>
                   <th>NAME</th>
-                  <th>USERNAME</th>
                   <th>GENDER</th>
                   <th>EMAIL</th>
                   <th>ACTIONS</th>
@@ -105,16 +100,9 @@ const ViewStudents = () => {
                     <td>
                       {i + 1}. {s.firstname} {s.lastname}
                     </td>
-                    <td>{s.username}</td>
                     <td>{s.gender}</td>
                     <td>{s.email}</td>
                     <td className="action-cell">
-                      <button
-                        className="profile-btn"
-                        onClick={() => handleProfile(s)}
-                      >
-                        Profile
-                      </button>
                       <button
                         className="remove-btn"
                         onClick={() => handleRemove(s._id)}

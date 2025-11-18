@@ -1,0 +1,192 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+:root {
+  --admin-bg: #f4f6fb;
+  --admin-card: #ffffff;
+  --admin-primary: #3c7dd9;
+  --admin-accent: #2d3e50;
+}
+
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #8bb2ff 0%, #5f79e5 40%, #182848 100%);
+  padding: 30px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.admin-header__title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 5px;
+}
+
+.admin-header__title h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.admin-header__actions button,
+.admin-card button,
+.admin-form button,
+.link-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--admin-primary);
+  color: #fff;
+}
+
+.admin-header__actions button:hover,
+.admin-card button:hover,
+.admin-form button:hover,
+.link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.admin-header__actions button:last-child {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-main {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.admin-card {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1f2a37;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-card.highlight {
+  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
+}
+
+.admin-card button.secondary {
+  background: transparent;
+  color: var(--admin-primary);
+  border: 1px solid rgba(60, 125, 217, 0.4);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 25px;
+}
+
+.admin-card h2,
+.admin-card h3 {
+  margin: 0;
+}
+
+.admin-card p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 15px;
+}
+
+.link-btn {
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  font-size: 16px;
+  text-decoration: underline;
+}
+
+.form-wrapper {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2933;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  gap: 8px;
+  color: #1f2933;
+}
+
+.admin-form input,
+.admin-form select {
+  border: 1px solid #cbd5f5;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  background-color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.form-actions .secondary {
+  background: transparent;
+  color: var(--admin-accent);
+  border: 1px solid rgba(45, 62, 80, 0.3);
+}
+
+.form-actions button:last-child {
+  background-color: var(--admin-primary);
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-main {
+    padding: 20px;
+  }
+
+  .admin-page {
+    padding: 20px 15px;
+  }
+}
+

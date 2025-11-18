@@ -43,6 +43,8 @@ const LoginForm = () => {
         navigate("/teacher-home");
       } else if (user.role === "student") {
         navigate("/student-home");
+      } else if (user.role === "admin") {
+        navigate("/admin-home");
       } else {
         navigate("/"); // fallback
       }

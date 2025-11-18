@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUserCircle,
@@ -8,10 +8,33 @@ import {
   FaChalkboardTeacher,
   FaShoppingCart,
 } from "react-icons/fa";
+import axios from "axios";
 import "../../styles/StudentHome.css";
 
 const TeacherHome = () => {
   const navigate = useNavigate();
+  const [accountType, setAccountType] = useState("");
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await axios.get("http://localhost:5000/api/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data && res.data.accountType) {
+          setAccountType(res.data.accountType.toUpperCase());
+        }
+      } catch (error) {
+        console.error("Error fetching account type:", error);
+      }
+    };
+
+    fetchAccountType();
+  }, []);
 
   const handleProfileClick = () => {
     navigate("/set-profile");
@@ -34,7 +57,9 @@ const TeacherHome = () => {
   return (
     <div className="student-home-container">
       <header className="student-home-header">
-        <div className="header-left"></div>
+        <div className="header-left">
+          <span className="account-type-label">{accountType}</span>
+        </div>
         <div className="header-icons">
           <div
             className="header-box1"

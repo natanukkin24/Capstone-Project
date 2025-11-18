@@ -74,7 +74,29 @@ export default function TeacherLeaderboards() {
                 }}
               >
                 <span>{medals[index] || index + 1}</span>
-                <span>
+                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <img
+                    src={
+                      student.avatar && student.avatar.startsWith('data:image')
+                        ? student.avatar
+                        : student.avatar && student.avatar.trim() !== ''
+                        ? `/Assets/${student.avatar}.png`
+                        : "/Assets/avatar.png"
+                    }
+                    alt="avatar"
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid white",
+                    }}
+                    onError={(e) => {
+                      if (e.target.src !== "/Assets/avatar.png") {
+                        e.target.src = "/Assets/avatar.png";
+                      }
+                    }}
+                  />
                   {student.firstname} {student.lastname}
                 </span>
                 <span>{student.points?.toLocaleString() || 0} ⭐</span>

@@ -55,6 +55,14 @@ const Form = () => {
     setFormdata({ ...formdata, gender: e.target.value });
   };
 
+  if(!formdata.accountType){
+    return (
+      <div className="accounttype-student-form">
+        <h2 className="form-title">PLEASE SELECT AN ACCOUNT TYPE FIRST.</h2>
+      </div>
+    );
+  }
+
   if(formdata.accountType === "student"){
     return(
     <form className="accounttype-student-form">
@@ -120,7 +128,9 @@ const Form = () => {
       </button>
     </form>
   );
-  }else{
+  }
+
+  if (formdata.accountType === "teacher") {
     return(
     <form className="accounttype-teacher-form">
       <h2 className="form-title">ACCOUNT TYPE: {formdata.accountType.toUpperCase()}</h2>
@@ -173,6 +183,72 @@ const Form = () => {
     </form>
     )
   }
+
+  if (formdata.accountType === "admin") {
+    return (
+      <form className="accounttype-admin-form">
+        <h2 className="form-title">
+          ACCOUNT TYPE: {formdata.accountType.toUpperCase()}
+        </h2>
+        <input
+          type="text"
+          placeholder="First Name"
+          onChange={(e) =>
+            setFormdata({ ...formdata, firstname: e.target.value })
+          }
+        />
+        <input
+          type="text"
+          placeholder="Last Name"
+          onChange={(e) =>
+            setFormdata({ ...formdata, lastname: e.target.value })
+          }
+        />
+        <div className="birthdate-group">
+          <select name="month" onChange={handleDateChange}>
+            <option value="">Month</option>
+            {months.map((month, idx) => (
+              <option key={idx} value={idx}>
+                {month}
+              </option>
+            ))}
+          </select>
+          <select name="day" onChange={handleDateChange}>
+            <option value="">Day</option>
+            {days.map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
+          </select>
+          <select name="year" onChange={handleDateChange}>
+            <option value="">Year</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+        <select name="gender" onChange={handleGenderChange}>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => {
+            console.log(formdata);
+            navigate("/email&password");
+          }}
+        >
+          Next
+        </button>
+      </form>
+    );
+  }
+
+  return null;
 };
 
 export default Form;

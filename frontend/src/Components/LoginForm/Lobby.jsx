@@ -30,7 +30,23 @@ const Lobby = () => {
 
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const isTeacher = user.role === "teacher";
-      setUserRole(user.role || "student");
+      const role = user.role || "student";
+      setUserRole(role);
+      
+      // For students, rejoin lobby when fetching data
+      if (role === "student" && quizId) {
+        // Rejoin the lobby
+        axios.post(
+          `http://localhost:5000/api/quiz/${quizId}/join`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        ).catch((error) => {
+          console.error("Error rejoining lobby:", error);
+          // Continue even if rejoin fails - might already be in lobby
+        });
+      }
 
       // Fetch lobby data based on user role
       if (isTeacher) {
@@ -312,18 +328,25 @@ const Lobby = () => {
                     className={player ? "player-slot filled" : "player-slot"}
                   >
                     {player ? (
-                      player.avatar ? (
-                        <img
-                          src={getAvatarUrl(player.avatar)}
-                          alt={player.username || "Player Avatar"}
-                          className="player-avatar"
-                          onError={(e) => {
-                            e.target.src = "/Assets/avatar.png";
-                          }}
-                        />
-                      ) : (
-                        <div className="empty-avatar-placeholder"></div>
-                      )
+                      <>
+                        {player.avatar ? (
+                          <img
+                            src={getAvatarUrl(player.avatar)}
+                            alt={player.username || "Player Avatar"}
+                            className="player-avatar"
+                            onError={(e) => {
+                              e.target.src = "/Assets/avatar.png";
+                            }}
+                          />
+                        ) : (
+                          <div className="empty-avatar-placeholder"></div>
+                        )}
+                        <span className="player-username">
+                          {player.firstname && player.lastname
+                            ? `${player.firstname} ${player.lastname}`
+                            : player.username || "Player"}
+                        </span>
+                      </>
                     ) : (
                       <div className="empty-avatar-placeholder"></div>
                     )}

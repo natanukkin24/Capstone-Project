@@ -188,7 +188,7 @@ const Sidebar = () => {
           className={`menu-item ${activeItem === 'view-students' ? 'active' : ''}`}
           onClick={() => classId ? navigate(`/view-students/${classId}`) : navigate("/my-class-teacher")}
         >
-          <FaUsers /> VIEW STUDENTS
+          <FaUsers /> STUDENTS
         </div>
         <div 
           className={`menu-item ${activeItem === 'leaderboards' ? 'active' : ''}`}

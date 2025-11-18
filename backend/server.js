@@ -13,6 +13,7 @@ const profileRoutes = require('./routes/profileRoutes')
 const studentRoutes = require('./routes/studentRoutes');
 const classRoutes = require("./routes/classRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const adminRoutes = require('./routes/adminRoutes');
 dotenv.config();
 //Connect to MongoDB
 connectDB();
@@ -23,18 +24,13 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.originalUrl}`);
-  next();
-});
-
-
 //Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes)
 app.use('/api/students', studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -125,6 +121,12 @@ io.on('connection', (socket) => {
       io.to(`quiz-${quizId}`).emit('game-started', {
         quizId,
         startedBy: socket.userId
+      });
+    } else if ((gameState.status === 'paused' || gameState.status === 'resumed') && socket.userRole === 'teacher') {
+      // If teacher pauses/resumes, notify all players
+      io.to(`quiz-${quizId}`).emit('game-state-updated', {
+        gameState,
+        updatedBy: socket.userId
       });
     } else {
       socket.to(`quiz-${quizId}`).emit('game-state-updated', {

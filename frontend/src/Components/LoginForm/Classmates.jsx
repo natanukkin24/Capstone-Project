@@ -42,10 +42,6 @@ const Classmates = () => {
     }
   }, [classId, navigate]);
 
-  const handleProfile = (student) => {
-    alert(`Viewing profile of ${student.firstname} ${student.lastname}`);
-  };
-
   return (
     <div className="view-student-container">
       <SidebarStudent />
@@ -66,10 +62,8 @@ const Classmates = () => {
               <thead>
                 <tr>
                   <th>NAME</th>
-                  <th>USERNAME</th>
                   <th>GENDER</th>
                   <th>EMAIL</th>
-                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,17 +72,8 @@ const Classmates = () => {
                     <td>
                       {i + 1}. {s.firstname} {s.lastname}
                     </td>
-                    <td>{s.username || "N/A"}</td>
                     <td>{s.gender || "N/A"}</td>
                     <td>{s.email || "N/A"}</td>
-                    <td className="action-cell">
-                      <button
-                        className="profile-btn"
-                        onClick={() => handleProfile(s)}
-                      >
-                        Profile
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>

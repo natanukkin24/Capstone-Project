@@ -24,6 +24,8 @@ import TeacherLeaderboards from "./Components/LoginForm/TeacherLeaderboards";
 import MyQuizzes from "./Components/LoginForm/MyQuizzes";
 import CreateClassTeacher from "./Components/LoginForm/CreateClassTeacher";
 import TeacherHome from "./Components/LoginForm/TeacherHome";
+import AdminHome from "./Components/LoginForm/AdminHome";
+import AdminCreateTeacher from "./Components/LoginForm/AdminCreateTeacher";
 import ProtectedRoute from "./Components/LoginForm/ProtectedRoute";
 import CreateQuiz from "./Components/LoginForm/CreateQuiz";
 import GameMode from "./Components/LoginForm/GameMode";
@@ -89,7 +91,7 @@ function App() {
             <Route
               path="/settings"
               element={
-                <ProtectedRoute allowedRoles={["student" , "teacher"]}>
+                <ProtectedRoute allowedRoles={["student" , "teacher", "admin"]}>
                   <Settings />
                 </ProtectedRoute>
               }
@@ -97,7 +99,7 @@ function App() {
             <Route
               path="/set-profile"
               element={
-                <ProtectedRoute allowedRoles={["student" , "teacher"]}>
+                <ProtectedRoute allowedRoles={["student" , "teacher", "admin"]}>
                   <SetProfile />
                 </ProtectedRoute>
               }
@@ -261,6 +263,24 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["student", "teacher"]}>
                   <Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* 🛡️ Admin Routes */}
+            <Route
+              path="/admin-home"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminHome />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/create-teacher"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminCreateTeacher />
                 </ProtectedRoute>
               }
             />

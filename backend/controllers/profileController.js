@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
+const Admin = require('../models/Admin');
 
 // GET profile (based on logged-in user)
 exports.getProfile = async (req, res) => {
@@ -7,7 +8,12 @@ exports.getProfile = async (req, res) => {
     const userId = req.user.id;
     const role = req.user.role;
 
-    const Model = role === 'student' ? Student : Teacher;
+    const modelMap = {
+      student: Student,
+      teacher: Teacher,
+      admin: Admin,
+    };
+    const Model = modelMap[role] || Student;
     const user = await Model.findById(userId).select('-password');
 
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -23,7 +29,12 @@ exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const role = req.user.role;
-    const Model = role === 'student' ? Student : Teacher;
+    const modelMap = {
+      student: Student,
+      teacher: Teacher,
+      admin: Admin,
+    };
+    const Model = modelMap[role] || Student;
 
     // Get allowed fields
     const { firstName, lastName, gender, gradeLevel, username, avatar, section } = req.body;
@@ -45,10 +56,7 @@ exports.updateProfile = async (req, res) => {
       // Note: username field doesn't exist in Student model, so we skip it
     }
     
-    // Teacher-specific fields (if any)
-    if (role === 'teacher') {
-      // Add teacher-specific fields here if needed
-    }
+    // Teacher or admin specific fields (if any) can be added here
 
     console.log('Update fields:', updateFields);
 

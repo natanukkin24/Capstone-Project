@@ -11,6 +11,7 @@ const {
   getStudentClasses,
   removeStudent,
   deleteClass,
+  leaveClassroom,
 } = require("../controllers/classController");
 const { getLeaderboard } = require("../controllers/leaderboardController");
 
@@ -18,6 +19,9 @@ const { getLeaderboard } = require("../controllers/leaderboardController");
 
 // ✅ Enroll student
 router.post("/enroll", authenticate, authorize(["student"]), enrollStudent);
+
+// ✅ Student leaves classroom
+router.post("/leave-classroom", authenticate, authorize(["student"]), leaveClassroom);
 
 // ✅ Create class (teacher)
 router.post("/", authenticate, authorize(["teacher"]), createClass);

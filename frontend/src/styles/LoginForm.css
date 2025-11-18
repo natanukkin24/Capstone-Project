@@ -44,6 +44,25 @@
   color: #555;
 }
 
+.password-box {
+  position: relative;
+}
+
+.password-box input {
+  padding-right: 50px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.2rem;
+  user-select: none;
+  z-index: 1;
+}
+
 .button-container {
   display: flex;
   justify-content: center;

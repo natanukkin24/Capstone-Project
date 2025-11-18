@@ -164,7 +164,7 @@ const SidebarStudent = () => {
           className={`menu-item ${isJoinGame ? 'active' : ''}`}
           onClick={() => classId ? navigate(`/join-game/${classId}`) : navigate("/my-class")}
         >
-          <FaGamepad /> JOIN GAME
+          <FaGamepad /> GAME
         </div>
         <div 
           className={`menu-item ${isLeaderboards ? 'active' : ''}`}

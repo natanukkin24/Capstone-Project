@@ -10,13 +10,29 @@
 .student-home-header {
   position: absolute;
   top: 0;
+  left: 0;
   right: 0;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
   padding: 12px;
   background-color: transparent;
   z-index: 10;
 }
+.header-left {
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+}
+
+.account-type-label {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+}
+
 .header-icons {
   display: flex;
   gap: 16px;

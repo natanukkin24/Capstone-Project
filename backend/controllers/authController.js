@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Student = require("../models/Student");
 const Teacher = require("../models/Teacher");
+const Admin = require("../models/Admin");
 
 // REGISTER
 const register = async (req, res) => {
@@ -17,45 +18,57 @@ const register = async (req, res) => {
       gender,
       email,
       password,
-      accountType, // "student" or "teacher"
+      accountType, // "student", "teacher", or "admin"
     } = req.body;
 
     if (!firstname || !lastname || !email || !password || !accountType) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (!["student", "teacher"].includes(accountType.toLowerCase())) {
+    const normalizedType = accountType.toLowerCase();
+    const accountTypeMap = {
+      student: Student,
+      teacher: Teacher,
+      admin: Admin,
+    };
+
+    if (!accountTypeMap[normalizedType]) {
       return res.status(400).json({ message: "Invalid account type" });
     }
 
-    const Model = accountType === "teacher" ? Teacher : Student;
-
     const existingStudent = await Student.findOne({ email });
     const existingTeacher = await Teacher.findOne({ email });
-    if (existingStudent || existingTeacher) {
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingStudent || existingTeacher || existingAdmin) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new Model({
+    const Model = accountTypeMap[normalizedType];
+    const userPayload = {
       firstname,
       lastname,
       birthMonth,
       birthDay,
       birthYear,
-      gradeLevel,
-      section,
       gender,
       email,
       password: hashedPassword,
-      accountType,
-    });
+      accountType: normalizedType,
+    };
+
+    if (normalizedType === "student") {
+      userPayload.gradeLevel = gradeLevel;
+      userPayload.section = section;
+    }
+
+    const newUser = new Model(userPayload);
 
     await newUser.save();
 
     res.status(201).json({
-      message: `${accountType} registered successfully`,
+      message: `${normalizedType} registered successfully`,
       user: newUser,
     });
   } catch (err) {
@@ -73,7 +86,9 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
 
     let user =
-      (await Student.findOne({ email })) || (await Teacher.findOne({ email }));
+      (await Student.findOne({ email })) ||
+      (await Teacher.findOne({ email })) ||
+      (await Admin.findOne({ email }));
 
     if (!user) return res.status(404).json({ message: "User not found" });
 

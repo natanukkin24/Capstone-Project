@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import websocketService from '../../services/websocket';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,6 +13,279 @@ const Game = () => {
   const [score, setScore] = useState(0);
   const [quizData, setQuizData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState(0); // in seconds
+  const [isPaused, setIsPaused] = useState(false);
+  const gameLoopRef = useRef(null);
+  const playersRef = useRef([]);
+  const [activeQuestion, setActiveQuestion] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState('');
+  const [questionFeedback, setQuestionFeedback] = useState(null);
+  const questionLockRef = useRef(false);
+  const audioCtxRef = useRef(null);
+  const audioUnlockedRef = useRef(false);
+  const musicGainRef = useRef(null);
+  const musicOscillatorsRef = useRef([]);
+  const musicPatternIntervalRef = useRef(null);
+  const musicStepRef = useRef(0);
+
+  const initAudioContext = useCallback(() => {
+    if (audioUnlockedRef.current) return;
+    if (typeof window === 'undefined') return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioCtx();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+    audioUnlockedRef.current = true;
+  }, []);
+
+  const stopBackgroundMusic = useCallback(() => {
+    if (musicPatternIntervalRef.current) {
+      clearInterval(musicPatternIntervalRef.current);
+      musicPatternIntervalRef.current = null;
+    }
+    musicOscillatorsRef.current.forEach((osc) => {
+      try {
+        osc.stop();
+      } catch (err) {
+        // ignore
+      }
+    });
+    musicOscillatorsRef.current = [];
+    if (musicGainRef.current) {
+      try {
+        musicGainRef.current.disconnect();
+      } catch (err) {
+        // ignore
+      }
+      musicGainRef.current = null;
+    }
+  }, []);
+
+  const startBackgroundMusic = useCallback(() => {
+    if (!audioUnlockedRef.current || !audioCtxRef.current) return;
+    if (musicOscillatorsRef.current.length > 0) return;
+    const ctx = audioCtxRef.current;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.connect(ctx.destination);
+    musicGainRef.current = gain;
+
+    const createOsc = (type) => {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.connect(gain);
+      osc.start();
+      return osc;
+    };
+
+    const bassOsc = createOsc('sine');
+    const harmonyOsc = createOsc('triangle');
+    musicOscillatorsRef.current = [bassOsc, harmonyOsc];
+
+    const chords = [
+      { bass: 196, harmony: 294 },
+      { bass: 220, harmony: 330 },
+      { bass: 247, harmony: 370 },
+      { bass: 233, harmony: 349 }
+    ];
+
+    const applyChord = () => {
+      const chord = chords[musicStepRef.current % chords.length];
+      const now = ctx.currentTime;
+      bassOsc.frequency.exponentialRampToValueAtTime(chord.bass, now + 0.25);
+      harmonyOsc.frequency.exponentialRampToValueAtTime(chord.harmony, now + 0.25);
+    };
+
+    applyChord();
+    musicPatternIntervalRef.current = setInterval(() => {
+      musicStepRef.current = (musicStepRef.current + 1) % chords.length;
+      applyChord();
+    }, 5000);
+  }, []);
+
+  const playSound = useCallback((type) => {
+    if (!audioUnlockedRef.current || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    let frequency = 440;
+    let duration = 0.2;
+    let waveform = 'triangle';
+    let volume = 0.25;
+
+    switch (type) {
+      case 'question':
+        frequency = 620;
+        duration = 0.25;
+        waveform = 'sine';
+        volume = 0.3;
+        break;
+      case 'correct':
+        frequency = 740;
+        duration = 0.35;
+        waveform = 'square';
+        volume = 0.35;
+        break;
+      case 'incorrect':
+        frequency = 260;
+        duration = 0.4;
+        waveform = 'sawtooth';
+        volume = 0.3;
+        break;
+      case 'interact':
+        frequency = 500;
+        duration = 0.2;
+        waveform = 'triangle';
+        volume = 0.28;
+        break;
+      default:
+        break;
+    }
+
+    oscillator.type = waveform;
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+    gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + duration);
+  }, []);
+  const openQuestionModal = useCallback((question) => {
+    if (!question) return;
+    questionLockRef.current = true;
+    setActiveQuestion(question);
+    setSelectedAnswer('');
+    setQuestionFeedback(null);
+    playSound('question');
+  }, [playSound]);
+
+  const closeQuestionModal = () => {
+    questionLockRef.current = false;
+    setActiveQuestion(null);
+    setSelectedAnswer('');
+    setQuestionFeedback(null);
+  };
+
+  const handleSubmitAnswer = () => {
+    if (!activeQuestion || questionFeedback) return;
+    let answerValue = selectedAnswer;
+
+    if (activeQuestion.questionType === 'fill_in_the_blank') {
+      answerValue = (selectedAnswer || '').trim();
+    }
+
+    if (!answerValue) {
+      return;
+    }
+
+    const normalizedAnswer = (answerValue || '').trim().toLowerCase();
+    const normalizedCorrect = (activeQuestion.correctAnswer || '').trim().toLowerCase();
+    const isCorrect = normalizedAnswer === normalizedCorrect;
+
+    setQuestionFeedback(isCorrect ? 'correct' : 'incorrect');
+    playSound(isCorrect ? 'correct' : 'incorrect');
+
+    websocketService.sendAnswer({
+      quizId,
+      questionId: activeQuestion._id || activeQuestion.id || activeQuestion.questionText,
+      answer: answerValue,
+      isCorrect
+    });
+  };
+
+  const renderQuestionControls = () => {
+    if (!activeQuestion) return null;
+
+    if (activeQuestion.questionType === 'multiple_choice') {
+      const options = (activeQuestion.options || []).filter(opt => opt && opt.trim() !== '');
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 2vw, 14px)', marginTop: 'clamp(10px, 2vw, 16px)' }}>
+          {options.map((option, index) => {
+            const isSelected = selectedAnswer === option;
+            return (
+              <button
+                key={`${option}-${index}`}
+                type="button"
+                onClick={() => setSelectedAnswer(option)}
+                disabled={!!questionFeedback}
+                style={{
+                  padding: 'clamp(10px, 2.2vw, 14px)',
+                  borderRadius: '8px',
+                  border: isSelected ? '2px solid #4CAF50' : '1px solid #ccc',
+                  backgroundColor: isSelected ? '#e8f5e9' : '#fff',
+                  textAlign: 'left',
+                  cursor: questionFeedback ? 'not-allowed' : 'pointer',
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  fontSize: 'clamp(14px, 3.5vw, 18px)'
+                }}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (activeQuestion.questionType === 'true_false') {
+      const options = ['True', 'False'];
+      return (
+        <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 16px)', marginTop: 'clamp(10px, 2vw, 16px)', flexWrap: 'wrap' }}>
+          {options.map(option => {
+            const isSelected = selectedAnswer === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setSelectedAnswer(option)}
+                disabled={!!questionFeedback}
+                style={{
+                  flex: '1 1 45%',
+                  minWidth: '130px',
+                  padding: 'clamp(10px, 2.5vw, 16px)',
+                  borderRadius: '8px',
+                  border: isSelected ? '2px solid #4CAF50' : '1px solid #ccc',
+                  backgroundColor: isSelected ? '#e8f5e9' : '#fff',
+                  cursor: questionFeedback ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: 'clamp(14px, 4vw, 18px)'
+                }}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // fill_in_the_blank or default
+    return (
+      <input
+        type="text"
+        value={selectedAnswer}
+        disabled={!!questionFeedback}
+        onChange={(e) => setSelectedAnswer(e.target.value)}
+        placeholder="Type your answer"
+        style={{
+          width: '100%',
+          padding: 'clamp(10px, 2.5vw, 16px)',
+          borderRadius: '8px',
+          border: '1px solid #ccc',
+          marginTop: 'clamp(10px, 2vw, 16px)',
+          fontSize: 'clamp(14px, 4vw, 18px)'
+        }}
+      />
+    );
+  };
   const DIRECTION_OFFSETS = {
     right: 0,   // FIRST 6 frames
     up: 6,
@@ -54,6 +327,22 @@ const Game = () => {
 
         if (response.data && response.data.quiz) {
           setQuizData(response.data.quiz);
+          
+          // Store players with their names from the API response
+          if (response.data.players && Array.isArray(response.data.players)) {
+            setPlayers(response.data.players);
+            playersRef.current = response.data.players;
+          }
+          
+          // Set timer based on difficulty
+          const difficulty = response.data.quiz.difficulty || 'easy';
+          let minutes = 45; // default easy
+          if (difficulty === 'medium') {
+            minutes = 30;
+          } else if (difficulty === 'hard') {
+            minutes = 15;
+          }
+          setTimeRemaining(minutes * 60); // Convert to seconds
         } else {
           console.error('Quiz data not found in response:', response.data);
           setLoading(false);
@@ -92,12 +381,20 @@ const Game = () => {
     // Set up WebSocket event listeners
     websocketService.on('player-joined', (data) => {
       console.log('Player joined:', data);
-      setPlayers(prev => [...prev, data]);
+      setPlayers(prev => {
+        const updated = [...prev, data];
+        playersRef.current = updated;
+        return updated;
+      });
     });
 
     websocketService.on('player-left', (data) => {
       console.log('Player left:', data);
-      setPlayers(prev => prev.filter(p => p.userId !== data.userId));
+      setPlayers(prev => {
+        const updated = prev.filter(p => p.userId !== data.userId);
+        playersRef.current = updated;
+        return updated;
+      });
       // Remove player from game state
       if (gameStateRef.current && data.userId) {
         delete gameStateRef.current.otherPlayers[data.userId];
@@ -127,9 +424,18 @@ const Game = () => {
     // Listen for initial player positions when they join
     websocketService.on('player-joined-lobby', (data) => {
       console.log('Player joined lobby:', data);
+      // Store player name if available
+      if (data.player && gameStateRef.current) {
+        const userId = data.player.id || data.player._id;
+        if (userId && gameStateRef.current.otherPlayers[userId]) {
+          gameStateRef.current.otherPlayers[userId].firstname = data.player.firstname;
+          gameStateRef.current.otherPlayers[userId].lastname = data.player.lastname;
+          gameStateRef.current.otherPlayers[userId].username = data.player.username;
+        }
+      }
       if (gameStateRef.current && data.position) {
         gameStateRef.current.updatePlayerPosition({
-          userId: data.userId || data.id,
+          userId: data.userId || data.id || (data.player && (data.player.id || data.player._id)),
           position: data.position
         });
       }
@@ -142,6 +448,15 @@ const Game = () => {
       
       if (data.isCorrect && data.userId === currentUserId) {
         setScore(prev => prev + 10);
+      }
+    });
+
+    // Listen for game pause/resume events
+    websocketService.on('game-state-updated', (data) => {
+      if (data.gameState && data.gameState.status === 'paused') {
+        setIsPaused(true);
+      } else if (data.gameState && data.gameState.status === 'resumed') {
+        setIsPaused(false);
       }
     });
 
@@ -196,6 +511,8 @@ const Game = () => {
         direction: 'idle',
         facingDirection: 'down' // 'up', 'down', 'left', 'right'
       },
+      interactables: [],
+      nextQuestionIndex: 0,
       otherPlayers: {},
       keys: {},
       lastTime: 0,
@@ -224,6 +541,12 @@ const Game = () => {
         
         // Update or create player position
         if (!this.otherPlayers[userId]) {
+          // Try to find player name from players ref (improved ID matching)
+          const playerData = playersRef.current.find(p => {
+            const pId = String(p.id || p._id || '');
+            const otherId = String(userId || '');
+            return pId === otherId && pId !== '';
+          });
           this.otherPlayers[userId] = {
             x: position.x,
             y: position.y,
@@ -233,7 +556,10 @@ const Game = () => {
             facingDirection: facingDirection || 'down',
             direction: direction || 'idle',
             currentFrame: currentFrame || 0,
-            lastUpdateTime: performance.now()
+            lastUpdateTime: performance.now(),
+            firstname: playerData?.firstname,
+            lastname: playerData?.lastname,
+            username: playerData?.username
           };
         } else {
           this.otherPlayers[userId].x = position.x;
@@ -292,19 +618,39 @@ const Game = () => {
         });
         gameState.mapImage = tilesetImage;
 
-        // Calculate scale - teachers see full map, students zoom in
+        // Calculate scale - same dimension for both players and spectators
         const mapWidth = mapData.width * mapData.tilewidth;
         const mapHeight = mapData.height * mapData.tileheight;
         const scaleX = canvas.width / mapWidth;
         const scaleY = canvas.height / mapHeight;
         const baseScale = Math.max(scaleX, scaleY);
         
-        if (isTeacher) {
-          // Teachers see entire map
-          gameState.mapScale = baseScale;
+        // Use same scale for both teachers and students
+        gameState.mapScale = baseScale;
+
+        const getObjectProperty = (object, propName) => {
+          if (!object?.properties) return undefined;
+          const prop = object.properties.find((property) => property.name === propName);
+          return prop ? prop.value : undefined;
+        };
+
+        const interactableLayer = mapData.layers?.find(
+          (layer) => layer.name === 'interactables' && layer.type === 'objectgroup'
+        );
+
+        if (interactableLayer && Array.isArray(interactableLayer.objects)) {
+          gameState.interactables = interactableLayer.objects.map((obj) => ({
+            id: obj.id,
+            x: obj.x * gameState.mapScale,
+            y: obj.y * gameState.mapScale,
+            width: (obj.width || 0) * gameState.mapScale,
+            height: (obj.height || 0) * gameState.mapScale,
+            name: obj.name || getObjectProperty(obj, 'name') || 'Interactable',
+            type: getObjectProperty(obj, 'type') || obj.type || 'generic',
+            triggered: false
+          }));
         } else {
-          // Students zoom in 1.5x
-          gameState.mapScale = baseScale * 1.5;
+          gameState.interactables = [];
         }
 
         console.log('Map loaded successfully', { mapWidth, mapHeight, scale: gameState.mapScale, isTeacher });
@@ -496,12 +842,16 @@ const Game = () => {
 
     // Keyboard input
     const handleKeyDown = (e) => {
+      initAudioContext();
+      startBackgroundMusic();
       if (isTeacher) return; // Teachers can't control
+      if (isPaused) return; // Don't allow movement when paused
       gameState.keys[e.key.toLowerCase()] = true;
     };
 
     const handleKeyUp = (e) => {
       if (isTeacher) return;
+      if (isPaused) return; // Don't allow movement when paused
       gameState.keys[e.key.toLowerCase()] = false;
     };
 
@@ -516,7 +866,7 @@ const Game = () => {
       const canvasHeight = canvas.height / dpr;
       
       if (isTeacher) {
-        // For teachers: disable camera movement, show entire map
+        // For teachers: disable camera movement, show entire map (same as students now)
         camera.x = 0;
         camera.y = 0;
         camera.targetX = 0;
@@ -525,7 +875,7 @@ const Game = () => {
         camera.velocityY = 0;
         return; // Skip camera smoothing for teachers
       } else {
-        // For students: follow their own player with a deadzone
+        // For students: follow their own player with a deadzone (same map scale as teachers)
         // This prevents the camera from constantly adjusting for tiny movements
         const player = state.player;
         const deadzoneWidth = canvasWidth * 0.25; // 25% of screen width
@@ -596,6 +946,42 @@ const Game = () => {
 
     // Fixed timestep game loop for consistent 60fps
     const gameLoop = (currentTime) => {
+      // If paused, only draw the current frame (no updates)
+      if (isPaused) {
+        // Still draw the map and players (frozen state)
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        if (gameState.map && gameState.mapImage && gameState.mapCanvas) {
+          drawMap(ctx, gameState, canvas);
+        }
+
+        if (!isTeacher) {
+          drawPlayer(ctx, gameState);
+        }
+
+        drawOtherPlayers(ctx, gameState);
+
+        if (isTeacher) {
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 32px Arial';
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 4;
+          ctx.strokeText('SPECTATOR MODE', canvas.width / 2 - 150, 50);
+          ctx.fillText('SPECTATOR MODE', canvas.width / 2 - 150, 50);
+          
+          ctx.font = '18px Arial';
+          ctx.strokeText('You are watching the game', canvas.width / 2 - 120, 100);
+          ctx.fillText('You are watching the game', canvas.width / 2 - 120, 100);
+        }
+        
+        // Schedule next frame even when paused (so UI remains responsive)
+        gameLoopRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
+
       if (!gameState.lastTime) {
         gameState.lastTime = currentTime;
       }
@@ -667,7 +1053,8 @@ const Game = () => {
         ctx.fillText('You are watching the game', canvas.width / 2 - 120, 100);
       }
 
-      requestAnimationFrame(gameLoop);
+      // Schedule next frame and store reference for pause/resume
+      gameLoopRef.current = requestAnimationFrame(gameLoop);
     };
 
     // Draw map
@@ -728,12 +1115,25 @@ const Game = () => {
     };
 
 
+    const boxesOverlap = (a, b) => {
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      );
+    };
+
     // Update player
     const updatePlayer = (state, deltaTime) => {
     const player = state.player;
     player.velocityX = 0;
     player.velocityY = 0;
     let isMoving = false;
+
+    if (questionLockRef.current) {
+      return;
+    }
 
     // LEFT
     if (state.keys['a']) {
@@ -777,6 +1177,37 @@ const Game = () => {
       // Fallback to canvas bounds if map not loaded
       player.x = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, player.x));
       player.y = Math.max(player.height / 2, Math.min(canvas.height - player.height / 2, player.y));
+    }
+
+    if (!isTeacher && state.interactables && state.interactables.length && !questionLockRef.current) {
+      const playerBounds = {
+        x: player.x - player.width / 2,
+        y: player.y - player.height / 2,
+        width: player.width,
+        height: player.height
+      };
+
+      const collided = state.interactables.find(
+        (obj) =>
+          !obj.triggered &&
+          obj.width > 0 &&
+          obj.height > 0 &&
+          boxesOverlap(playerBounds, obj)
+      );
+
+      if (collided) {
+        playSound('interact');
+        collided.triggered = true;
+        const questions = quizData?.questions || [];
+        if (questions.length > 0) {
+          const nextIndex = state.nextQuestionIndex % questions.length;
+          const nextQuestion = questions[nextIndex];
+          state.nextQuestionIndex = (state.nextQuestionIndex + 1) % questions.length;
+          openQuestionModal(nextQuestion);
+        } else {
+          console.warn('No quiz questions available to display.');
+        }
+      }
     }
 
     // Animation timing (optimized for 60fps)
@@ -843,6 +1274,50 @@ const Game = () => {
     const drawX = player.x - state.camera.x - destWidth / 2;
     const drawY = player.y - state.camera.y - destHeight / 2;
 
+    // Get current player's name - try multiple sources
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUserId = currentUser.id || currentUser._id;
+    
+    let playerName = 'Player';
+    
+    // First, try to get from players array (most reliable, has full name from API)
+    const playerData = playersRef.current.find(p => (p.id || p._id) === currentUserId);
+    if (playerData) {
+      if (playerData.firstname && playerData.lastname) {
+        playerName = `${playerData.firstname} ${playerData.lastname}`;
+      } else if (playerData.firstname) {
+        playerName = playerData.firstname;
+      } else if (playerData.username) {
+        playerName = playerData.username;
+      }
+    } else {
+      // Fallback to localStorage user object (handle both camelCase and lowercase)
+      const firstName = currentUser.firstName || currentUser.firstname;
+      const lastName = currentUser.lastName || currentUser.lastname;
+      if (firstName && lastName) {
+        playerName = `${firstName} ${lastName}`;
+      } else if (firstName) {
+        playerName = firstName;
+      } else if (currentUser.username) {
+        playerName = currentUser.username;
+      }
+    }
+
+    // Draw player name above sprite
+    ctx.save();
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    
+    // Draw text with stroke for visibility
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.strokeText(playerName, drawX + destWidth / 2, drawY - 5);
+    
+    ctx.fillStyle = 'white';
+    ctx.fillText(playerName, drawX + destWidth / 2, drawY - 5);
+    ctx.restore();
+
     ctx.drawImage(
       player.sprite,
       sourceX,
@@ -884,6 +1359,39 @@ const Game = () => {
           drawY = otherPlayer.y - state.camera.y;
         }
         
+        // Get player name - prioritize playersRef for spectator view
+        let playerName = 'Player';
+        
+        // First, try to find player name from players ref (most reliable source)
+        const playerData = playersRef.current.find(p => {
+          const pId = String(p.id || p._id || '');
+          const otherId = String(otherPlayer.userId || '');
+          return pId === otherId && pId !== '';
+        });
+        
+        if (playerData) {
+          // Found player data - use it
+          if (playerData.firstname && playerData.lastname) {
+            playerName = `${playerData.firstname} ${playerData.lastname}`;
+            // Store it in otherPlayer for future use
+            otherPlayer.firstname = playerData.firstname;
+            otherPlayer.lastname = playerData.lastname;
+          } else if (playerData.firstname) {
+            playerName = playerData.firstname;
+            otherPlayer.firstname = playerData.firstname;
+          } else if (playerData.username) {
+            playerName = playerData.username;
+            otherPlayer.username = playerData.username;
+          }
+        } else if (otherPlayer.firstname && otherPlayer.lastname) {
+          // Fallback to stored name in otherPlayer
+          playerName = `${otherPlayer.firstname} ${otherPlayer.lastname}`;
+        } else if (otherPlayer.firstname) {
+          playerName = otherPlayer.firstname;
+        } else if (otherPlayer.username) {
+          playerName = otherPlayer.username;
+        }
+        
         // Use character sprites if available
         if (state.idleSprite && state.runSprite) {
           const frameWidth = 16;
@@ -910,6 +1418,21 @@ const Game = () => {
           const destWidth = frameWidth * 2;
           const destHeight = frameHeight * 2;
           
+          // Draw player name above sprite
+          ctx.save();
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          
+          // Draw text with stroke for visibility
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 3;
+          ctx.strokeText(playerName, drawX, drawY - destHeight / 2 - 5);
+          
+          ctx.fillStyle = 'white';
+          ctx.fillText(playerName, drawX, drawY - destHeight / 2 - 5);
+          ctx.restore();
+          
           // Draw the sprite
           ctx.drawImage(
             sprite,
@@ -924,6 +1447,20 @@ const Game = () => {
           );
         } else {
           // Fallback to rectangle if sprites not loaded
+          // Draw player name above rectangle
+          ctx.save();
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 3;
+          ctx.strokeText(playerName, drawX, drawY - otherPlayer.height / 2 - 5);
+          
+          ctx.fillStyle = 'white';
+          ctx.fillText(playerName, drawX, drawY - otherPlayer.height / 2 - 5);
+          ctx.restore();
+          
           ctx.fillStyle = '#4ECDC4';
           ctx.fillRect(
             drawX - otherPlayer.width / 2,
@@ -939,52 +1476,252 @@ const Game = () => {
     // Start game loop with fixed timestep
     gameState.lastTime = null; // Will be set on first frame
     gameState.accumulator = 0;
-    const animationId = requestAnimationFrame(gameLoop);
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
 
     // Cleanup
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', updateCanvasSize);
-      cancelAnimationFrame(animationId);
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
+      stopBackgroundMusic();
+      websocketService.off('game-state-updated');
       websocketService.disconnect();
     };
-  }, [quizId, navigate, isTeacher, isStudent, quizData, loading]);
+  }, [quizId, navigate, isTeacher, isStudent, quizData, loading, isPaused, openQuestionModal, initAudioContext, playSound, startBackgroundMusic, stopBackgroundMusic]);
 
-  const handleExit = () => {
+  // Timer countdown effect
+  useEffect(() => {
+    if (timeRemaining <= 0 || !gameReady) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Timer ended - handle game end
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameReady]); // Start when game becomes ready
+
+  // Format time as MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Handle pause (teacher only)
+  const handlePause = () => {
+    if (!isTeacher) return;
+    
+    const newPauseState = !isPaused;
+    setIsPaused(newPauseState);
+    
+    // Send pause/resume event to all players
+    websocketService.sendGameState({
+      quizId,
+      gameState: { status: newPauseState ? 'paused' : 'resumed' }
+    });
+  };
+
+  // Handle resume
+  const handleResume = () => {
+    setIsPaused(false);
+    
+    // Send resume event to all players
+    websocketService.sendGameState({
+      quizId,
+      gameState: { status: 'resumed' }
+    });
+  };
+
+  const handleExit = async () => {
     if (quizId) {
       websocketService.leaveQuizRoom(quizId);
     }
     websocketService.disconnect();
-    navigate(-1);
+    
+    // For students, navigate back to lobby and rejoin
+    if (isStudent) {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          // Rejoin the lobby
+          await axios.post(
+            `http://localhost:5000/api/quiz/${quizId}/join`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        }
+      } catch (error) {
+        console.error("Error rejoining lobby:", error);
+        // Continue navigation even if rejoin fails
+      }
+      navigate(`/lobby/${quizId}`);
+    } else {
+      // For teachers, go back
+      navigate(-1);
+    }
   };
 
   return (
     <div className="phaser-game-wrapper">
-      <button 
-        className="leave-game-btn" 
-        onClick={handleExit}
-        style={{
+      {/* Timer in top center */}
+      {gameReady && timeRemaining > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 'clamp(10px, 2vh, 24px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            padding: 'clamp(8px, 1.5vw, 16px) clamp(16px, 3vw, 28px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            borderRadius: 'clamp(6px, 1vw, 12px)',
+            fontSize: 'clamp(16px, 4vw, 28px)',
+            fontWeight: 'bold',
+            fontFamily: 'monospace',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            border: '2px solid white',
+            minWidth: 'clamp(120px, 35vw, 240px)',
+            textAlign: 'center'
+          }}
+        >
+          {formatTime(timeRemaining)}
+        </div>
+      )}
+      
+      {/* Pause button (teacher only) and Leave Game button in top right */}
+      <div style={{
+        position: 'fixed',
+        top: 'clamp(12px, 2vh, 24px)',
+        right: 'clamp(12px, 2vw, 24px)',
+        zIndex: 1000,
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 'clamp(8px, 1.5vw, 14px)',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        maxWidth: '90vw'
+      }}>
+        {isTeacher && (
+          <button 
+            onClick={handlePause}
+            style={{
+              padding: 'clamp(8px, 1.5vw, 14px) clamp(14px, 2.5vw, 22px)',
+              backgroundColor: isPaused ? '#ff9800' : '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'clamp(4px, 0.7vw, 8px)',
+              cursor: 'pointer',
+              fontSize: 'clamp(12px, 3vw, 16px)',
+              fontWeight: 'bold',
+              transition: 'background-color 0.3s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = isPaused ? '#f57c00' : '#1976D2'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = isPaused ? '#ff9800' : '#2196F3'}
+          >
+            {isPaused ? 'RESUME' : 'PAUSE'}
+          </button>
+        )}
+        <button 
+          className="leave-game-btn" 
+          onClick={handleExit}
+          style={{
+            padding: 'clamp(8px, 1.5vw, 14px) clamp(16px, 3vw, 24px)',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'clamp(4px, 0.7vw, 8px)',
+            cursor: 'pointer',
+            fontSize: 'clamp(12px, 3vw, 16px)',
+            fontWeight: 'bold',
+            transition: 'background-color 0.3s',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f2f'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#f44336'}
+        >
+          Leave Game
+        </button>
+      </div>
+
+      {/* Pause message in center when paused */}
+      {isPaused && (
+        <div style={{
           position: 'fixed',
-          top: '20px',
-          left: '20px',
-          zIndex: 1000,
-          padding: '10px 20px',
-          backgroundColor: '#f44336',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          transition: 'background-color 0.3s',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-        }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f2f'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#f44336'}
-      >
-        Leave Game
-      </button>
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 2000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 'clamp(12px, 3vh, 24px)',
+          width: 'min(90vw, 500px)'
+        }}>
+          <div style={{
+            width: '100%',
+            padding: 'clamp(16px, 3vw, 28px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            borderRadius: '12px',
+            fontSize: 'clamp(20px, 5vw, 32px)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            border: '3px solid white'
+          }}>
+            GAME PAUSED
+          </div>
+          {isTeacher ? (
+            <button
+              onClick={handleResume}
+              style={{
+                width: '100%',
+                padding: 'clamp(12px, 2.5vw, 20px)',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: 'clamp(16px, 4vw, 24px)',
+                fontWeight: 'bold',
+                transition: 'background-color 0.3s',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
+            >
+              RESUME
+            </button>
+          ) : (
+            <div style={{
+              padding: 'clamp(12px, 2.5vw, 20px)',
+              backgroundColor: 'rgba(255, 152, 0, 0.9)',
+              color: 'white',
+              borderRadius: '8px',
+              fontSize: 'clamp(14px, 3.5vw, 20px)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+            }}>
+              The game is being paused by the teacher
+            </div>
+          )}
+        </div>
+      )}
       <div className="phaser-game-container">
         {loading && <div className="loading">Loading quiz data...</div>}
         {!loading && !gameReady && <div className="loading">Loading game...</div>}
@@ -999,6 +1736,109 @@ const Game = () => {
           }}
         />
       </div>
+
+      {activeQuestion && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000,
+            padding: 'clamp(12px, 4vw, 30px)'
+          }}
+        >
+          <div
+            style={{
+              width: 'min(600px, 92vw)',
+              maxHeight: '90vh',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              padding: 'clamp(16px, 4vw, 28px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+              overflowY: 'auto'
+            }}
+          >
+            <h2 style={{ marginTop: 0, fontSize: 'clamp(18px, 5vw, 26px)' }}>Quiz Question</h2>
+            <p style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: 'bold' }}>{activeQuestion.questionText}</p>
+
+            {renderQuestionControls()}
+
+            {questionFeedback && (
+              <div
+                style={{
+                  marginTop: '20px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: questionFeedback === 'correct' ? '#e8f5e9' : '#ffebee',
+                  color: questionFeedback === 'correct' ? '#2e7d32' : '#c62828',
+                  fontWeight: 'bold'
+                }}
+              >
+                {questionFeedback === 'correct'
+                  ? 'Correct! Great job.'
+                  : `Incorrect. Correct answer: ${activeQuestion.correctAnswer}`}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '24px' }}>
+              {!questionFeedback ? (
+                <button
+                  type="button"
+                  onClick={handleSubmitAnswer}
+                  disabled={
+                    (activeQuestion.questionType === 'fill_in_the_blank'
+                      ? selectedAnswer.trim().length === 0
+                      : !selectedAnswer)
+                  }
+                  style={{
+                    padding: 'clamp(10px, 2.5vw, 16px) clamp(18px, 3.5vw, 28px)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    backgroundColor:
+                      (activeQuestion.questionType === 'fill_in_the_blank'
+                        ? selectedAnswer.trim().length === 0
+                        : !selectedAnswer)
+                        ? '#b0bec5'
+                        : '#4CAF50',
+                    color: '#fff',
+                    fontSize: 'clamp(14px, 4vw, 18px)',
+                    cursor:
+                      (activeQuestion.questionType === 'fill_in_the_blank'
+                        ? selectedAnswer.trim().length === 0
+                        : !selectedAnswer)
+                        ? 'not-allowed'
+                        : 'pointer'
+                  }}
+                >
+                  Submit Answer
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={closeQuestionModal}
+                  style={{
+                    padding: 'clamp(10px, 2.5vw, 16px) clamp(18px, 3.5vw, 28px)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    backgroundColor: '#1976d2',
+                    color: '#fff',
+                    fontSize: 'clamp(14px, 4vw, 18px)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Continue
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

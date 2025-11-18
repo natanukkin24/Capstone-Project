@@ -14,6 +14,8 @@ const MyClass = () => {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [teacherName, setTeacherName] = useState("");
+  const [accountType, setAccountType] = useState("");
 
   const handleClose = () => {
     navigate("/teacher-home");
@@ -26,16 +28,17 @@ const MyClass = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("user");
+    window.location.href = "/"; // full reload to reset app state
   };
 
   const handleProfileClick = () => {
     navigate("/set-profile");
   };
 
-  // 🔹 Fetch teacher's created classes
+  // 🔹 Fetch teacher's profile and created classes
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -43,24 +46,49 @@ const MyClass = () => {
           return;
         }
 
-        const res = await axios.get("http://localhost:5000/api/classes/my-classes", {
+        // Fetch teacher's profile to get name
+        const profileRes = await axios.get("http://localhost:5000/api/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setClasses(res.data);
+        if (profileRes.data) {
+          const firstName = profileRes.data.firstname || "";
+          const lastName = profileRes.data.lastname || "";
+          setTeacherName(`${firstName} ${lastName}`.trim() || "Teacher");
+          if (profileRes.data.accountType) {
+            setAccountType(profileRes.data.accountType.toUpperCase());
+          }
+        }
+
+        // Fetch teacher's classes
+        const classesRes = await axios.get("http://localhost:5000/api/classes/my-classes", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Sort classes by createdAt (most recent first)
+        const sortedClasses = classesRes.data.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0);
+          const dateB = new Date(b.createdAt || 0);
+          return dateB - dateA; // Descending order (newest first)
+        });
+
+        setClasses(sortedClasses);
       } catch (err) {
-        console.error("Error fetching classes:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchClasses();
+    fetchData();
   }, [navigate]);
 
   return (
     <div className="student-home-container">
       <header className="student-home-header">
+        <div className="header-left">
+          <span className="account-type-label">{accountType}</span>
+        </div>
         <div className="header-icons">
           <div className="header-box1" onClick={handleProfileClick}>
             <FaUserCircle className="icon" />
@@ -108,7 +136,7 @@ const MyClass = () => {
                   <p><strong>GRADE LEVEL:</strong> {cls.gradeLevel}</p>
                   <p><strong>SECTION:</strong> {cls.section}</p>
                   <p><strong>SUBJECT:</strong> {cls.subject}</p>
-                  <p><strong>TEACHER:</strong> John Doe</p>
+                  <p><strong>TEACHER:</strong> {teacherName}</p>
                 </div>
                 <div className="class-actions">
                   <p className="class-code-label">CLASS CODE</p>

@@ -24,7 +24,8 @@ h2.form-title {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-.accounttype-teacher-form {
+.accounttype-teacher-form,
+.accounttype-admin-form {
   max-width: 500px;
   margin: 50px auto;
   padding: 30px;
@@ -36,14 +37,17 @@ h2.form-title {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.accounttype-teacher-form button:hover {
+.accounttype-teacher-form button:hover,
+.accounttype-admin-form button:hover {
   background-color: #6d5a32;
   transform: translateY(-2px);
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .accounttype-teacher-form input,
-.accounttype-teacher-form select {
+.accounttype-teacher-form select,
+.accounttype-admin-form input,
+.accounttype-admin-form select {
   width: 100%;
   padding: 10px;
   margin-top: 10px;
@@ -52,7 +56,8 @@ h2.form-title {
   font-size: 16px;
 }
 
-.accounttype-teacher-form button {
+.accounttype-teacher-form button,
+.accounttype-admin-form button {
   width: 100%;
   padding: 12px;
   margin-top: 20px;
@@ -67,7 +72,8 @@ h2.form-title {
   cursor: pointer;
 }
 
-.accounttype-teacher-form button:hover {
+.accounttype-teacher-form button:hover,
+.accounttype-admin-form button:hover {
   background-color: #6d5a32;
 }
 
